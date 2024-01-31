@@ -10,12 +10,12 @@ def read_file_contents(filename: str) -> str:
     :param filename: File to read.
     :return: File contents as string.
     """
-   with open(filename, "r") as file:
-       return file.read()
+    with open(filename, "r") as file:
+        return file.read()
 
 
 def read_file_contents_to_list(filename: str) -> list:
-    r"""
+    """
     Read file contents into list of lines.
 
     In this exercise, we can assume the file exists.
@@ -57,8 +57,10 @@ def read_csv_file(filename: str) -> list:
     :return: List of lists.
     """
     with open(filename, newline="") as file:
-        file.write(contents)
-    return None
+        reader = csv.reader(file)
+        data = list(reader)
+
+    return data
 
 
 def write_contents_to_file(filename: str, contents: str) -> None:
@@ -90,7 +92,7 @@ def write_lines_to_file(filename: str, lines: list) -> None:
     :return: None
     """
     with open(filename, "w") as file:
-        file.writelines("/n".join(lines))
+        file.writelines("\n".join(lines))
     return None
 
 
@@ -115,9 +117,11 @@ def write_csv_file(filename: str, data: list) -> None:
     :param data: List of lists to write to the file.
     :return: None
     """
-    pwith open(filename, "w", newline="") as file:
-        writer = cvs.writer(file)
-        writer.writerows(data)
+    with open(filename, "w", newline="") as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=",")
+        for row in data:
+            csv_writer.writerow(row)
+    return None
 
 
 def merge_dates_and_towns_into_csv(dates_filename: str, towns_filename: str, csv_output_filename: str) -> None:
@@ -165,21 +169,44 @@ def merge_dates_and_towns_into_csv(dates_filename: str, towns_filename: str, csv
     :param csv_output_filename: Output CSV-file with names, towns and dates.
     :return: None
     """
-    town_dict = {}
-    with open(towns_filename, "r") as town_file:
-        town_reader = csv.reader(town_file, delimiter=":")
-        for row in town_reader:
-            town_dict[row[0]] = row[1] if len(row) > 1 else "-"
+    names = []
     
-    with open(csv_output_filename, "w", newline="") as csv_output_file:
-        output_writer = csv.writer(csv_output_file)
-        output_writer.writerow([name, town, date])
+    with open(dates_filename, newline="") as f:
+        reader = csv.reader(f,delimiter = ":")
+        data = list(reader)
+        for twn in data:
+            names.append(twn[0])
+    with open(towns_filename, newline="") as f:
+        reader = csv.reader(f,delimiter = ":")
+        data = list(reader)
+        for twn in data:
+            if not twn[0] in names:
+                names.append(twn[0])
+    print(names)
     
-    with open(dates_filename, "r") as dates_file:
-        dates_reader = csv.reader(dates_file, delimiter=":"
-        for row in dates_reader):
-            name = row[0]
-            date = row[1] if len(row) > 1 else "-"
-            town = town_dict.get(name, "-")
-            output_writer.writerow([name, town, date])
-    
+    def gettown(name: str):
+        town = ""
+        with open(towns_filename, newline="") as f:
+            reader = csv.reader(f,delimiter = ':')
+            data = list(reader)
+            for twn in data:
+                if twn[0] == name:
+                    return twn[1]
+            return "-"
+
+    def getdate(name: str):
+        with open(dates_filename, newline="") as f:
+            reader = csv.reader(f,delimiter = ":")
+            data = list(reader)
+            for twn in data:
+                if twn[0] == name:
+                    return twn[1]
+            return "-"
+
+    nlist = [["name","town","date"]]
+    for twn in names:
+        nlist.append([twn,gettown(twn),getdate(twn)])
+    print(nlist)
+    f = open(csv_output_filename, "w")
+    writer = csv.writer(f)
+    writer.writerows(nlist)
